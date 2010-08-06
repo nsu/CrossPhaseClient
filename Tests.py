@@ -16,7 +16,7 @@ def makeGST(unique):
     jacksink.set_property('connect', 'none')
     player.set_property("video-sink",  fakesink)
     player.set_property("audio-sink",  jacksink)
-    filename = '/home/n/Code/CrossPhase/testNoise.mp3'
+    filename = './testNoise.mp3'
     if not os.path.exists(filename): raise IOError
     player.set_property("uri", "file://" + filename)
     player.set_state(gst.STATE_PAUSED)
