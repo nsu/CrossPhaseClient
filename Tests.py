@@ -7,54 +7,66 @@ import os
 import time
 
 
+class Tester(object):
+    def __init__(self):
+        self.unique = str(time.time())
+        self.statuses = {}
+        self.name = os.path.basename(__file__)
+    
+    def GST(self):
+        try:
+            self.player = gst.element_factory_make("playbin2", "self.player")
+            fakesink = gst.element_factory_make("fakesink", "fakesink")
+            jacksink = gst.element_factory_make("jackaudiosink", self.unique)
+            jacksink.set_property('connect', 'none')
+            self.player.set_property("video-sink",  fakesink)
+            self.player.set_property("audio-sink",  jacksink)
+            basename = os.path.abspath('.')
+            filename = basename+'/testNoise.mp3'
+            if not os.path.exists(filename): raise IOError
+            self.player.set_property("uri", "file://" + filename)
+            self.player.set_state(gst.STATE_PAUSED)
+        except Exception, e:
+            self.statuses['GST'] = e
+            
+    def Jack(self):
+        try:
+            jack.attach(self.name)
+            jack.activate()
+        except Exception, e:
+            self.statuses['Jack'] = e
+    
+    def Connect(self):
+        try:
+            for i in xrange(10):
+                selfPort = [port for port in jack.get_ports() if self.unique in port]
+                if not selfPort: time.sleep(.01)
+                else: break
+            if not selfPort: raise jack.UsageError("Test port could not be registered", "Try increasing sleep time")
+            allPorts = jack.get_ports()
+            selfPort = [port for port in allPorts if self.unique in port][0]
+            inPorts = [port for port in allPorts if 'playback' in port]
+            for port in inPorts:
+                jack.connect(selfPort, port)
+        except Exception, e:
+            self.statuses['Connect'] = e
 
-def makeGST(unique):
-    unique=unique
-    player = gst.element_factory_make("playbin2", "player")
-    fakesink = gst.element_factory_make("fakesink", "fakesink")
-    jacksink = gst.element_factory_make("jackaudiosink", unique)
-    jacksink.set_property('connect', 'none')
-    player.set_property("video-sink",  fakesink)
-    player.set_property("audio-sink",  jacksink)
-    basename = os.path.abspath('.')
-    filename = basename+'/testNoise.mp3'
-    if not os.path.exists(filename): raise IOError
-    player.set_property("uri", "file://" + filename)
-    player.set_state(gst.STATE_PAUSED)
-    return player
+    def Play(self):
+        try:
+            self.player.set_state(gst.STATE_PLAYING)
+            time.sleep(1)
+        except Exception, e:
+            self.statuses['Play'] = e
+    
+    def cleanup(self):
+        jack.detach()
 
-
-def makeJack(unique):
-    selfName = os.path.basename(os.path.basename(__file__))
-    time.sleep(.1)
-    jack.attach(selfName)
-    jack.activate()
-    systemPorts = set(jack.get_ports())
-    if not selfName+":out_"+unique+"_1" in jack.get_ports(): return False
-    return True
-
-def makeConnect(unique):
-    allPorts = jack.get_ports()
-    selfPort = [port for port in allPorts if unique in port][0]
-    inPorts = [port for port in allPorts if 'playback' in port]
-    try:
-        for port in inPorts:
-            jack.connect(selfPort, port)
-    except:
-        return False
-    return True
-
-def makeGo(player):
-    player.set_state(gst.STATE_PLAYING)
-    time.sleep(5)
-    return True
-
-def runTest():
-    unique = str(time.time())
-    player = makeGST(unique)
-    print "GST Status: ", bool(player)
-    print "Jack Status: ", makeJack(unique)
-    print "Connect Status: ", makeConnect(unique)
-    print "Go status: ", makeGo(player)
-
-runTest()
+    def run(self):
+        self.Jack()
+        self.GST()
+        self.Connect()
+        self.Play()
+        print self.statuses
+    
+a = Tester()
+a.run()

@@ -39,30 +39,24 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     allow_reuse_address = True
     def __init__(self, hpTuple, handler):
         SocketServer.TCPServer.__init__(self, hpTuple, handler)
-        self.allOutputs = set([output.rstrip() for output in os.popen("jack_lsp | grep out").readlines()])
+        self.allOutputs = set([output for output in jack.get_ports() if 'playback' in output])
         self.ownedOutputs = set()
         print self.allOutputs
 
 
-def client():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(("localhost", 3141))
-    sock.send("message")
-    # response = sock.recv(1024)
-    # print "Received: %s" % response
-    sock.close()
-
 if __name__ == "__main__":
-    HOST, PORT = "", 3141 
+    name = os.path.basename(__file__)
+    jack.attach(name)
+    jack.activate()
     
+    HOST, PORT = "", 3141 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     server_thread = threading.Thread(target=server.serve_forever)
     print os.getpid()
 
     server_thread.setDaemon(True)
     server_thread.start()
-    client()
-    sleep(2)
     print "Server Initiated"
-    sleep(25)
+    while True:
+        sleep(25)
 

@@ -26,8 +26,9 @@ class Player():
     def prepare(self):
         self.player.set_state(gst.STATE_PAUSED)
         time.sleep(.1)
-        jack.attach(self.name)
-        jack.activate()
+        # These may or may not be needed in Player if initialized in Server
+        # jack.attach(self.name)
+        # jack.activate()
     
     def jConnect(self, output, input):
         output, input = str(output), str(input)
