@@ -23,20 +23,13 @@ class Tester(object):
             self.player.set_property("audio-sink",  jacksink)
             basename = os.path.abspath('.')
             filename = basename+'/testNoise.mp3'
-            if not os.path.exists(filename): raise IOError
+            if not os.path.exists(filename): raise IOError("Could not find test file")
             self.player.set_property("uri", "file://" + filename)
             self.player.set_state(gst.STATE_PAUSED)
         except Exception, e:
-            self.statuses['GST'] = e
-            
-    def Jack(self):
-        try:
-            jack.attach(self.name)
-            jack.activate()
-        except Exception, e:
-            self.statuses['Jack'] = e
+            self.statuses['GST'] = e            
     
-    def Connect(self):
+    def Jack(self):
         try:
             for i in xrange(10):
                 selfPort = [port for port in jack.get_ports() if self.unique in port]
@@ -49,7 +42,7 @@ class Tester(object):
             for port in inPorts:
                 jack.connect(selfPort, port)
         except Exception, e:
-            self.statuses['Connect'] = e
+            self.statuses['Jack'] = e
 
     def Play(self):
         try:
@@ -57,16 +50,18 @@ class Tester(object):
             time.sleep(1)
         except Exception, e:
             self.statuses['Play'] = e
-    
-    def cleanup(self):
-        jack.detach()
+        
+    def ALSA(self):
+        Mixers = [alsaaudio.Mixer(m) for m in alsaaudio.mixers(0)]
+        if len(Mixers) < 1: raise alsaaudio.ALSAAudioError
 
     def run(self):
-        self.Jack()
+        self.ALSA()
         self.GST()
-        self.Connect()
+        self.Jack()
         self.Play()
-        print self.statuses
+        return self.statuses
     
-a = Tester()
-a.run()
+if __name__ == '__main__':
+    t = Tester()
+    t.run() 
