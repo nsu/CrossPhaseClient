@@ -14,7 +14,7 @@ import time
 class Player():
     def __init__(self, name):
         self.name = name
-        self.uuid=str(uuid.uuid1())
+        self.uuid=str(uuid.uuid4())
         self.player = gst.element_factory_make("playbin2", "player"+self.uuid)
         self.fakesink = gst.element_factory_make("fakesink", "fakesink"+self.uuid)
         self.jacksink = gst.element_factory_make("jackaudiosink", "jsink"+self.uuid)

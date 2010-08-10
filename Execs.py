@@ -3,7 +3,8 @@ import time
 
 import Tests
 import Player
-import jack
+import Cue
+
 
 
 class base(object):
@@ -25,19 +26,34 @@ class shake(base):
         self.confParser.readfp(fp)
         fp.close()
         return self.confParser.get('system', 'channels')
+
+
     
     def run(self):
-        results = self.tester.run()
         chans = self.getChans()
-        self.addVal('tests', results)
         self.addVal('chans', chans)
+        results = self.tester.run()
+        self.addVal('tests', results)
         return self.retVal
 
 class makeplayer(base):
-    def add():
-        pass
-            
     def run(self):
-        player = Player.Player(self.handler.name)
-        self.addVal('uuid', player.getUUID())
+        player = Player.Player(self.handler.server.name)
+        uuid = player.getUUID()
+        self.addVal('PLAYERID', uuid)
+        self.handler.server.addPlayer(uuid, player)
         return self.retVal
+
+class buildcue(base):
+    def __init__(self, data, handler):
+        base.__init__(self, data, handler)
+        self.data = data
+    
+    
+    def run(self):
+        new = Cue.cueList(id=self.data['PLAYERID'],
+            eTime=self.data['EXECTIME'],
+            commands=self.data['COMMANDS'],
+            exe=self
+        )
+        

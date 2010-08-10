@@ -7,25 +7,22 @@ from time import sleep
 import jack
 
 import Execs
-import Player
-import Cue
 
 class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
     def setup(self):
         SocketServer.StreamRequestHandler.setup(self)
-        self.name = os.path.basename(__file__)
         self.opts = {}
         self.opts['SHAKE']=Execs.shake
         self.opts['MAKEPLAYER']=Execs.makeplayer
+        self.opts['EXEC']=Execs.buildcue
                 
     def handle(self):
         raw = self.rfile.readline()
         print raw
-        print self.server.allOutputs
         try:
             data = json.loads(raw)
         except ValueError, e:
-            self.wfile.write("{'TYPE':'ERROR': 'Could not load packet to JSON: %s}" % raw.rstrip())
+            self.wfile.write(json.dumps({'TYPE':'ERROR', 'MESSAGE': 'Could not load packet to JSON: %s' % raw.rstrip()}))
             return False
         self.wfile.write("%s\n" % json.dumps(self.opts[data['TYPE']](data, self).run()))
         return True
@@ -39,13 +36,20 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     allow_reuse_address = True
     def __init__(self, hpTuple, handler):
         SocketServer.TCPServer.__init__(self, hpTuple, handler)
-        self.name = name = os.path.basename(__file__)
-        jack.attach(name)
+        self.name = os.path.basename(__file__)
+        jack.attach(self.name)
         jack.activate()
-        self.allOutputs = set([output for output in jack.get_ports() if 'playback' in output])
-        self.ownedOutputs = set()
+        self.players = {}
         print "Server Initiated"
         
+    def addPlayer(self, id, player):
+        self.players[id] = player
+    
+    def getPlayer(self, id):
+        return self.players[id]
+    
+    def delPlayer(self, id):
+        del(self.player[id])
 
 if __name__ == "__main__":
     
