@@ -47,19 +47,26 @@ class Tester(object):
     def Play(self):
         try:
             self.player.set_state(gst.STATE_PLAYING)
-            time.sleep(1)
+            # time.sleep(1)
         except Exception, e:
             self.statuses['Play'] = e
         
     def ALSA(self):
-        Mixers = [alsaaudio.Mixer(m) for m in alsaaudio.mixers(0)]
-        if len(Mixers) < 1: raise alsaaudio.ALSAAudioError
+        try:
+            Mixers = [alsaaudio.Mixer(m) for m in alsaaudio.mixers(0)]
+            if len(Mixers) < 1: raise alsaaudio.ALSAAudioError
+        except:
+            self.statuses['ALSA'] = "Something has gone terribly wrong with ALSA"
+
+    def cleanup(self):
+        self.player.set_state(gst.STATE_NULL)
 
     def run(self):
         self.ALSA()
         self.GST()
         self.Jack()
         self.Play()
+        self.cleanup()
         return self.statuses
     
 if __name__ == '__main__':

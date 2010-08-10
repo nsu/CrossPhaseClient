@@ -7,18 +7,23 @@ import os
 import jack
 import random
 
+import uuid
+
 import time
 
 class Player():
-    def __init__(self, num, name):
+    def __init__(self, name):
         self.name = name
-        self.num=str(num)
-        self.player = gst.element_factory_make("playbin2", "player"+self.num)
-        self.fakesink = gst.element_factory_make("fakesink", "fakesink"+self.num)
-        self.jacksink = gst.element_factory_make("jackaudiosink", "jsink"+self.num)
+        self.uuid=str(uuid.uuid1())
+        self.player = gst.element_factory_make("playbin2", "player"+self.uuid)
+        self.fakesink = gst.element_factory_make("fakesink", "fakesink"+self.uuid)
+        self.jacksink = gst.element_factory_make("jackaudiosink", "jsink"+self.uuid)
         self.jacksink.set_property('connect', 'none')
         self.player.set_property("video-sink", self.fakesink)
         self.player.set_property("audio-sink", self.jacksink)        
+
+    def getUUID(self):
+        return self.uuid
 
     def setPath(self, filepath):
         self.player.set_property("uri", "file://" + filepath)
@@ -26,18 +31,15 @@ class Player():
     def prepare(self):
         self.player.set_state(gst.STATE_PAUSED)
         time.sleep(.1)
-        # These may or may not be needed in Player if initialized in Server
-        # jack.attach(self.name)
-        # jack.activate()
     
     def jConnect(self, output, input):
         output, input = str(output), str(input)
-        print self.name+":out_jsink"+self.num+"_"+output,"alsa_pcm:playback_"+input
-        jack.connect(self.name+":out_jsink"+self.num+"_"+output,"alsa_pcm:playback_"+input)
+        print self.name+":out_jsink"+self.uuid+"_"+output,"alsa_pcm:playback_"+input
+        jack.connect(self.name+":out_jsink"+self.uuid+"_"+output,"alsa_pcm:playback_"+input)
 
     def jDConnect(self, output, input):
         output, input = str(output), str(input)
-        os.system("jack_disconnect "+self.name+":out_jsink"+self.num+"_"+output+" alsa_pcm:playback_"+input)
+        os.system("jack_disconnect "+self.name+":out_jsink"+self.uuid+"_"+output+" alsa_pcm:playback_"+input)
         
     def play(self):
         self.player.set_state(gst.STATE_PLAYING)

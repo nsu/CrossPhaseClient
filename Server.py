@@ -13,22 +13,23 @@ import Cue
 class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
     def setup(self):
         SocketServer.StreamRequestHandler.setup(self)
+        self.name = os.path.basename(__file__)
         self.opts = {}
         self.opts['SHAKE']=Execs.shake
+        self.opts['MAKEPLAYER']=Execs.makeplayer
                 
     def handle(self):
         raw = self.rfile.readline()
+        print raw
+        print self.server.allOutputs
         try:
             data = json.loads(raw)
         except ValueError, e:
             self.wfile.write("{'TYPE':'ERROR': 'Could not load packet to JSON: %s}" % raw.rstrip())
             return False
-        self.wfile.write("%s\n" % self.opts[data['TYPE']](data).run())
+        self.wfile.write("%s\n" % json.dumps(self.opts[data['TYPE']](data, self).run()))
         return True
-        
-        
-        
-
+                
     def cleanup(self):
         pass
         
@@ -43,19 +44,17 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         jack.activate()
         self.allOutputs = set([output for output in jack.get_ports() if 'playback' in output])
         self.ownedOutputs = set()
-        print self.allOutputs
-
+        print "Server Initiated"
+        
 
 if __name__ == "__main__":
     
     HOST, PORT = "", 3141 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     server_thread = threading.Thread(target=server.serve_forever)
-    print os.getpid()
 
     server_thread.setDaemon(True)
     server_thread.start()
-    print "Server Initiated"
     while True:
         sleep(25)
 
