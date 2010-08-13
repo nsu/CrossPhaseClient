@@ -6,7 +6,6 @@ import Player
 import Cue
 
 
-
 class base(object):
     def __init__(self, data, handler):
         self.retVal = {'TYPE':data['TYPE']}
@@ -18,7 +17,7 @@ class base(object):
 class shake(base):
     def __init__(self, data, handler):
         base.__init__(self, data, handler)
-        self.tester = Tests.Tester()
+        self.tester = Tests.Tester(self)
         self.confParser = ConfigParser.RawConfigParser()
     
     def getChans(self):
@@ -44,7 +43,7 @@ class makeplayer(base):
         self.handler.server.addPlayer(uuid, player)
         return self.retVal
 
-class buildcue(base):
+class execute(base):
     def __init__(self, data, handler):
         base.__init__(self, data, handler)
         self.data = data
@@ -56,4 +55,5 @@ class buildcue(base):
             commands=self.data['COMMANDS'],
             exe=self
         )
+        new.startTimer()
         

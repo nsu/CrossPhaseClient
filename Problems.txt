@@ -1,0 +1,1 @@
+Allow Exec to call Player functions in threads. Talk to Lou about this, but I don't see why not. 

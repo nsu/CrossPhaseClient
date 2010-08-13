@@ -8,7 +8,8 @@ import time
 
 
 class Tester(object):
-    def __init__(self):
+    def __init__(self, exe):
+        self.exe = exe
         self.unique = str(time.time())
         self.statuses = {}
         self.name = os.path.basename(__file__)
@@ -59,11 +60,17 @@ class Tester(object):
             self.statuses['ALSA'] = "Something has gone terribly wrong with ALSA"
 
     def cleanup(self):
+        jack.deactivate()
+        jack.detach()
         self.player.set_state(gst.STATE_NULL)
+        del(self.player)
 
     def run(self):
+        print self.exe.handler.server.name
         self.ALSA()
         self.GST()
+        jack.attach(self.exe.handler.server.name)
+        jack.activate()
         self.Jack()
         self.Play()
         self.cleanup()

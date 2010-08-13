@@ -4,7 +4,6 @@ import SocketServer
 import json
 import os
 from time import sleep
-import jack
 
 import Execs
 
@@ -14,7 +13,7 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
         self.opts = {}
         self.opts['SHAKE']=Execs.shake
         self.opts['MAKEPLAYER']=Execs.makeplayer
-        self.opts['EXEC']=Execs.buildcue
+        self.opts['EXEC']=Execs.execute
                 
     def handle(self):
         raw = self.rfile.readline()
@@ -37,8 +36,6 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     def __init__(self, hpTuple, handler):
         SocketServer.TCPServer.__init__(self, hpTuple, handler)
         self.name = os.path.basename(__file__)
-        jack.attach(self.name)
-        jack.activate()
         self.players = {}
         print "Server Initiated"
         
@@ -49,7 +46,7 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         return self.players[id]
     
     def delPlayer(self, id):
-        del(self.player[id])
+        del(self.players[id])
 
 if __name__ == "__main__":
     

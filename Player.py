@@ -4,7 +4,6 @@ import gst
 
 import time
 import os
-import jack
 import random
 
 import uuid
@@ -26,20 +25,22 @@ class Player():
         return self.uuid
 
     def setPath(self, filepath):
-        self.player.set_property("uri", "file://" + filepath)
-
+        self.player.set_property("uri", "file://" + os.path.abspath(filepath))
+        
+    def getPath(self):
+        return self.player.get_property("uri")
+    
     def prepare(self):
         self.player.set_state(gst.STATE_PAUSED)
-        time.sleep(.1)
     
-    def jConnect(self, output, input):
+    def jConnect(self, output, input): 
         output, input = str(output), str(input)
-        print self.name+":out_jsink"+self.uuid+"_"+output,"alsa_pcm:playback_"+input
-        jack.connect(self.name+":out_jsink"+self.uuid+"_"+output,"alsa_pcm:playback_"+input)
+        print "jack_connect "+self.name+":out_jsink"+self.uuid+"_"+output+" system:playback_"+input
+        os.system("jack_connect "+self.name+":out_jsink"+self.uuid+"_"+output+" system:playback_"+input)
 
     def jDConnect(self, output, input):
         output, input = str(output), str(input)
-        os.system("jack_disconnect "+self.name+":out_jsink"+self.uuid+"_"+output+" alsa_pcm:playback_"+input)
+        os.system("jack_disconnect "+self.name+":out_jsink"+self.uuid+"_"+output+" system:playback_"+input)
         
     def play(self):
         self.player.set_state(gst.STATE_PLAYING)
@@ -62,7 +63,6 @@ class Player():
         final = self.getVolume()+vol
         for i in xrange(secs*100):
             self.setVolume(self.getVolume()+delta)
-            # print self.getVolume()
             time.sleep(.01)
         self.setVolume(final)
         print self.getVolume()
@@ -80,3 +80,9 @@ class Player():
     def seekAbs(self, secs):
         seek_ns = secs * 1000000000
         self.player.seek_simple(gst.FORMAT_TIME, gst.SEEK_FLAG_FLUSH, seek_ns)
+    
+    def die(self):
+        self.player.set_state(gst.STATE_NULL)
+        del(self.player)
+        del(self.fakesink)
+        del(self.jacksink)
