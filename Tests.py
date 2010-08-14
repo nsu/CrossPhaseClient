@@ -66,7 +66,6 @@ class Tester(object):
         del(self.player)
 
     def run(self):
-        print self.exe.handler.server.name
         self.ALSA()
         self.GST()
         jack.attach(self.exe.handler.server.name)

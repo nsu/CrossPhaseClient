@@ -17,7 +17,7 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
                 
     def handle(self):
         raw = self.rfile.readline()
-        print raw
+        # print raw
         try:
             data = json.loads(raw)
         except ValueError, e:

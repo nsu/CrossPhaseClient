@@ -25,15 +25,15 @@ class cueList(object):
     def startTimer(self):
          if self.eTime: 
              timediff = self.eTime - time.time()
-             self.timer = threading.Timer(timediff, self.run)
-         else: self.run()
+             time.sleep(timediff)
+         self.run()
          
     
     def run(self):
         for command in self.commands:
+            print command['ACTION']
             time.sleep(command['SLEEP'])
             self.cList[command['ACTION']](command['ARGS'])
-            print command['ACTION']
             
     def setPath(self, args):
         self.player.setPath(args[0])
@@ -46,7 +46,7 @@ class cueList(object):
         self.player.play()
     
     def pause(self, args):
-        pass
+        self.player.pause()
     
     def stop(self, args):
         pass
