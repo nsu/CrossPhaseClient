@@ -25,6 +25,7 @@ class cueList(object):
     def startTimer(self):
          if self.eTime: 
              timediff = self.eTime - time.time()
+             print timediff
              time.sleep(timediff)
          self.run()
          
