@@ -50,31 +50,36 @@ class cueList(object):
         self.player.pause()
     
     def stop(self, args):
-        pass
+        self.player.stop()
     
     def setVolume(self, args):
-        pass
+        self.player.setVolume(args[0])
 
     def getVolume(self, args):
-        pass
+        return self.player.getVolume()
         
     def fadeRel(self, args):
-        pass
+        self.player.fadeRel(args[0], args[1])
 
     def fadeAbs(self, args):
-        pass
+        self.player.fadeAbs(args[0], args[1])
 
     def seekRel(self, args):
-        pass
+        self.player.seekRel(args[0])
 
     def seekAbs(self, args):
-        pass
+        self.player.seekAbs(args[0])
 
     def destroy(self, args):
         self.player.die()
         self.exe.handler.server.delPlayer(self.player.getUUID())
         del(self.player)
 
-
     def connect(self, args):
-        pass
+        self.player.jConnect(args[0], args[1])
+        
+    def disconnect(self, args):
+        self.player.jDConnect(args[0], args[1])
+    
+    def delete(self, args):
+        self.player.die()

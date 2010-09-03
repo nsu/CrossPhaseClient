@@ -47,6 +47,9 @@ class Player():
 
     def pause(self):
         self.player.set_state(gst.STATE_PAUSED)
+        
+    def stop(self):
+        self.player.set_state(gst.STATE_NULL)
     
     def getVolume(self):
         return self.player.get_property("volume")
